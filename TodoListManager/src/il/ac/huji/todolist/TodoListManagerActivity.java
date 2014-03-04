@@ -61,12 +61,6 @@ public class TodoListManagerActivity extends Activity implements OnItemLongClick
 		return false;
 	}
 	
-	public void delete(int id){
-		list.remove(id);
-		tasksAdapter.notifyDataSetChanged();
-	}
-
-	
 	class CustomAdapter extends ArrayAdapter<String>{
 
 		public CustomAdapter(Context context, int resource, List<String> items) {
