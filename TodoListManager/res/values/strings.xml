@@ -7,5 +7,9 @@
     <string name="new_item_EditText"></string>
     <string name="add_item">add</string>
     <string name="tasksRow_string"></string>
+    <string name="deleteItem">Delete item</string>
+    <string name="call">Call</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="ok_button">OK</string>
     
 </resources>

@@ -1,0 +1,47 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="330dp"
+    android:layout_height="fill_parent" >
+
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edtNewItem"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="61dp" />
+
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/datePicker"
+        android:layout_below="@+id/datePicker"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/cancel_button" />
+
+    <Button
+        android:id="@+id/btnOK"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnCancel"
+        android:layout_alignBottom="@+id/btnCancel"
+        android:layout_alignLeft="@+id/datePicker"
+        android:layout_marginLeft="50dp"
+        android:text="@string/ok_button" />
+
+    <EditText
+        android:id="@+id/edtNewItem"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:ems="10"
+        android:inputType="textCapSentences|textAutoCorrect"
+        android:text="@string/new_item_EditText" >
+
+        <requestFocus />
+    </EditText>
+    
+</RelativeLayout>

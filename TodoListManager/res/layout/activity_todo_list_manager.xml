@@ -5,19 +5,6 @@
     android:orientation="vertical"
     tools:context=".TodoListManagerActivity" >
 
-    <EditText
-        android:id="@+id/edtNewItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textCapSentences|textAutoCorrect"
-        android:text="@string/new_item_EditText" >
-
-        <requestFocus />
-        
-        
-    </EditText>
-
     <ListView
         android:id="@+id/lstTodoItems"
         android:layout_width="match_parent"
