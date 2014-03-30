@@ -42,7 +42,7 @@ public class TodoListManagerActivity extends Activity{
 
 	private ListView tasksListView;
 	DBHelper helper;
-	SQLiteDatabase db;
+	SQLiteDatabase todo_db;
 	Cursor cursor;
 	CustomCursorAdapter ca;
 	int smallestFreeCell = 0;
@@ -57,10 +57,10 @@ public class TodoListManagerActivity extends Activity{
 
 		tasksListView = (ListView)findViewById(R.id.lstTodoItems);
 		helper = new DBHelper( getApplicationContext());
-		db = helper.getWritableDatabase();
+		todo_db = helper.getWritableDatabase();
 		onCreateContext = getApplicationContext();
 
-		cursor = db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
+		cursor = todo_db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
 
 		String[] from = new String[]{"title","due"};
 		int[] to = new int[]{R.id.txtTodoTitle,R.id.txtTodoDueDate};
@@ -120,8 +120,8 @@ public class TodoListManagerActivity extends Activity{
 			return true;
 		case R.id.menuItemDelete:		
 			long id = cursor.getInt(0);			
-			db.delete("todo", "_id like ?", new String[]{String.valueOf(id)} );
-			cursor = db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
+			todo_db.delete("todo", "_id like ?", new String[]{String.valueOf(id)} );
+			cursor = todo_db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
 			ca.swapCursor(cursor);
 			ca.notifyDataSetChanged();
 			
@@ -157,9 +157,9 @@ public class TodoListManagerActivity extends Activity{
 				ContentValues task = new ContentValues();
 				task.put("title", newTask);
 				task.put("due", date);
-				long id = db.insert("todo", null, task);
+				long id = todo_db.insert("todo", null, task);
 	
-				cursor = db.query("todo", new String[]{"_id", "title","due"}, null, null, null, null, null);
+				cursor = todo_db.query("todo", new String[]{"_id", "title","due"}, null, null, null, null, null);
 				ca.swapCursor(cursor);
 				ca.notifyDataSetChanged();
 				if(cursor ==  null || cursor.getCount() == -1 ){
