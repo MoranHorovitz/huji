@@ -3,12 +3,11 @@ package il.ac.huji.todolist;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import il.ac.huji.todolist.R;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.ContextMenu;
@@ -29,13 +29,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-import com.parse.GetCallback;
-import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 
 public class TodoListManagerActivity extends Activity{
@@ -45,10 +38,8 @@ public class TodoListManagerActivity extends Activity{
 	SQLiteDatabase todo_db;
 	Cursor cursor;
 	CustomCursorAdapter ca;
-	int smallestFreeCell = 0;
 	Context onCreateContext;
-	ParseObject taskParseObj;
-	Map<Long,String> ids = new HashMap<Long, String>();
+	LoadTasks loadTasks;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -57,21 +48,10 @@ public class TodoListManagerActivity extends Activity{
 
 		tasksListView = (ListView)findViewById(R.id.lstTodoItems);
 		helper = new DBHelper( getApplicationContext());
-		todo_db = helper.getWritableDatabase();
 		onCreateContext = getApplicationContext();
-
-		cursor = todo_db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
-
-		String[] from = new String[]{"title","due"};
-		int[] to = new int[]{R.id.txtTodoTitle,R.id.txtTodoDueDate};
-		ca = new CustomCursorAdapter(onCreateContext, R.layout.simple_row, cursor, from, to);
-		ca.setViewBinder(ca.new CustomViewBinder());
-		tasksListView.setAdapter(ca);
-		ca.notifyDataSetChanged();
 		registerForContextMenu (tasksListView);
-		
-		Parse.initialize(getApplicationContext(), "HtjSvOtCY9F1NcJlCeKh3V2M46xXqJYuKbWJKHeY", "FFg7WGt3NgL82f73SXgwTQsn0VOJFiXjit3N5iP6");
-		ParseUser.enableAutomaticUser();
+		loadTasks = new LoadTasks();
+		loadTasks.execute();
 	}
 
 	@Override
@@ -124,22 +104,6 @@ public class TodoListManagerActivity extends Activity{
 			cursor = todo_db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
 			ca.swapCursor(cursor);
 			ca.notifyDataSetChanged();
-			
-			ParseQuery<ParseObject> query = ParseQuery.getQuery("todo");
-			query.getInBackground(ids.get(id), new GetCallback<ParseObject>() {
-			  public void done(ParseObject object, ParseException e) {
-			    if (e == null) {
-			      object.deleteInBackground();
-			      Toast toast = Toast.makeText(getApplicationContext(), "task deleted" , Toast.LENGTH_SHORT);
-					toast.show();
-			    } else {
-			    	Toast toast = Toast.makeText(getApplicationContext(), "failed to remove task" , Toast.LENGTH_SHORT);
-					toast.show();
-			    }
-			  }
-			});
-			
-			ids.remove(id);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
@@ -157,27 +121,21 @@ public class TodoListManagerActivity extends Activity{
 				ContentValues task = new ContentValues();
 				task.put("title", newTask);
 				task.put("due", date);
-				long id = todo_db.insert("todo", null, task);
-	
+				todo_db.insert("todo", null, task);
+
 				cursor = todo_db.query("todo", new String[]{"_id", "title","due"}, null, null, null, null, null);
 				ca.swapCursor(cursor);
 				ca.notifyDataSetChanged();
 				if(cursor ==  null || cursor.getCount() == -1 ){
 					cursor.moveToFirst();
 				}
-				taskParseObj = new ParseObject("todo");
-				taskParseObj.put("title", newTask);
-				taskParseObj.put("due", date);
-				taskParseObj.saveInBackground();
-				String taskId = taskParseObj.getObjectId();
-				ids.put(id, taskId);
 			}
 		}	
 	} 
 
 	public class DBHelper extends SQLiteOpenHelper { 
 		public DBHelper(Context context) { 
-			super(context, "todo_db", null, 1); 
+			super(context, "todo", null, 1); 
 		} 
 
 		@Override
@@ -190,6 +148,38 @@ public class TodoListManagerActivity extends Activity{
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVer, int newVer){
+		}
+	}
+
+	private class LoadTasks extends AsyncTask<Void, Void, Void> {
+		ProgressDialog progressDialog;
+		
+		@Override
+		protected void onPreExecute() {
+	        progressDialog= ProgressDialog.show(TodoListManagerActivity.this, "Loading your tasks","please wait..", true);
+			super.onPreExecute();
+		}
+		@Override	
+		protected Void doInBackground(Void... arg) {
+			todo_db = helper.getWritableDatabase();
+			todo_db.delete("todo",null,null);
+			cursor = todo_db.query("todo", new String[]{"_id","title","due"}, null, null, null, null, null);
+			return null;
+		}
+		
+		protected void onProgressUpdate(Void... values) {
+			tasksListView.setAdapter(ca);
+			ca.notifyDataSetChanged();
+		}
+
+		protected void onPostExecute(Void result) {
+			String[] from = new String[]{"title","due"};
+			int[] to = new int[]{R.id.txtTodoTitle,R.id.txtTodoDueDate};
+			ca = new CustomCursorAdapter(onCreateContext, R.layout.simple_row, cursor, from, to);
+			ca.setViewBinder(ca.new CustomViewBinder());
+			tasksListView.setAdapter(ca);
+			ca.notifyDataSetChanged();
+			progressDialog.dismiss();
 		}
 	}
 
@@ -264,5 +254,5 @@ public class TodoListManagerActivity extends Activity{
 			}
 		}
 	}
-	
+
 }
